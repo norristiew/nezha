@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>探索日本 — 豪华演示</title>
+<style>
+  :root{
+    --accent:#d33;
+    --accent-dark:#b30000;
+    --bg:#0f1720;
+    --muted:rgba(255,255,255,0.85);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background:#0b0f13;
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow:hidden;
+  }
+
+  /* ======= SIDEBAR ======= */
+  .sidebar{
+    position:fixed;left:0;top:0;height:100vh;
+    width:68px;background:linear-gradient(180deg,#111217 0%, #0b0f13 100%);
+    border-right:1px solid rgba(255,255,255,0.04);
+    transition:width .28s ease;z-index:1200;overflow:hidden;
+  }
+  .sidebar:hover{width:240px}
+  .brand{
+    height:72px;display:flex;align-items:center;gap:12px;padding:0 14px;
+    font-weight:700;font-size:14px;letter-spacing:.6px;
+  }
+  .brand .logo{
+    width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;
+    box-shadow:0 6px 18px rgba(179,0,0,0.14);
+  }
+  nav{margin-top:8px;display:flex;flex-direction:column;gap:6px;padding:10px}
+  .tab{
+    display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;margin:4px;
+    cursor:pointer;color:var(--muted);transition:background .16s,transform .14s;
+    user-select:none;font-weight:600;font-size:14px;
+  }
+  .tab:hover{background:rgba(255,255,255,0.03);transform:translateX(4px)}
+  .tab.active{background:linear-gradient(90deg,var(--accent)20%,rgba(255,255,255,0.06));color:#fff;box-shadow:inset 0 -6px 18px rgba(0,0,0,0.25)}
+  .tab .icon{width:36px;height:36px;border-radius:8px;display:inline-grid;place-items:center;background:rgba(255,255,255,0.03)}
+  .tab span{white-space:nowrap;opacity:0;transition:opacity .18s .04s}
+  .sidebar:hover .tab span{opacity:1}
+
+  /* ======= MAIN / HERO ======= */
+  .main{margin-left:68px;transition:margin-left .28s ease;height:100vh;display:flex;flex-direction:column}
+  .sidebar:hover ~ .main{margin-left:240px}
+  .hero{
+    height:36vh;min-height:240px;background-image:url('https://images.unsplash.com/photo-1549692520-acc6669e2f0c');background-size:cover;background-position:center;
+    display:flex;align-items:center;justify-content:center;text-align:center;padding:28px;position:relative;
+  }
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,7,11,0.3),rgba(3,7,11,0.6))}
+  .hero .container{position:relative;z-index:2;color:#fff;max-width:1100px}
+  .hero h1{font-size:36px;margin:0 0 8px;text-shadow:0 6px 24px rgba(0,0,0,0.5)}
+  .hero p{margin:0;color:rgba(255,255,255,0.9);font-size:15px}
+
+  /* ======= SLIDER ======= */
+  .stage{position:relative;flex:1;overflow:hidden}
+  .viewport{width:100%;height:100%;overflow:hidden;position:relative}
+  .track{display:flex;height:100%;transition:transform .64s cubic-bezier(.22,.9,.26,1);will-change:transform}
+  .slide{flex:0 0 100%;min-height:calc(64vh);display:flex;align-items:center;justify-content:center;padding:40px;position:relative;background-size:cover;background-position:center}
+  .slide::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,6,9,0.12),rgba(2,6,9,0.45))}
+  .card{position:relative;z-index:2;max-width:980px;padding:28px;border-radius:14px;background:linear-gradient(180deg,rgba(6,10,14,0.48),rgba(6,10,14,0.2));backdrop-filter: blur(4px);box-shadow:0 12px 40px rgba(5,7,10,0.6)}
+  .card h2{margin:0 0 12px;font-size:28px}
+  .card p{margin:0;color:rgba(255,255,255,0.92);line-height:1.75;font-size:15px}
+
+  /* small image row inside card */
+  .thumbs{display:flex;gap:8px;margin-top:14px}
+  .thumbs img{width:110px;height:70px;object-fit:cover;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.35)}
+
+  /* arrows, dots, control */
+  .arrow{
+    position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:999px;border:0;background:linear-gradient(180deg,rgba(0,0,0,0.56),rgba(0,0,0,0.38));
+    color:#fff;font-size:22px;cursor:pointer;display:grid;place-items:center;z-index:1400;box-shadow:0 10px 30px rgba(0,0,0,0.45);
+  }
+  .arrow.left{left:18px}
+  .arrow.right{right:18px}
+  .dots{position:absolute;left:50%;transform:translateX(-50%);bottom:22px;display:flex;gap:8px;z-index:1400}
+  .dot{width:10px;height:10px;border-radius:999px;background:rgba(255,255,255,0.35);cursor:pointer;transition:all .18s}
+  .dot.active{transform:scale(1.5);background:var(--accent)}
+
+  /* controls */
+  .controls{position:absolute;right:22px;top:18px;z-index:1500;display:flex;gap:8px;align-items:center}
+  .btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.04);color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:600}
+  .btn.toggle{background:linear-gradient(90deg,var(--accent),var(--accent-dark))}
+
+  /* responsive */
+  @media (max-width:900px){
+    .sidebar{width:56px}
+    .sidebar:hover{width:200px}
+    .brand .logo{width:36px;height:36px}
+    .hero h1{font-size:28px}
+    .card{padding:18px}
+    .thumbs img{width:72px;height:48px}
+    .arrow{width:44px;height:44px}
+  }
+  @media (max-width:600px){
+    .sidebar{display:none}
+    body{overflow:auto}
+    .main{margin-left:0}
+    .hero{height:34vh}
+    .card{margin:18px;border-radius:12px}
+    .arrow{display:none}
+    .dots{bottom:12px}
+  }
+
+  /* small polish */
+  button:active{transform:scale(.98)}
+</style>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" aria-label="章节导航">
+    <div class="brand" title="探索日本">
+      <div class="logo">日</div>
+      <div class="name">探索日本</div>
+    </div>
+    <nav role="navigation" aria-label="章节">
+      <div class="tab active" data-i="0" role="button" tabindex="0" aria-current="true">
+        <div class="icon">🏔</div><span>地理</span>
+      </div>
+      <div class="tab" data-i="1" role="button" tabindex="0">
+        <div class="icon">🎎</div><span>文化</span>
+      </div>
+      <div class="tab" data-i="2" role="button" tabindex="0">
+        <div class="icon">📜</div><span>历史</span>
+      </div>
+      <div class="tab" data-i="3" role="button" tabindex="0">
+        <div class="icon">🗼</div><span>景点</span>
+      </div>
+      <div class="tab" data-i="4" role="button" tabindex="0">
+        <div class="icon">🍣</div><span>美食</span>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main" role="main">
+    <header class="hero" aria-hidden="false">
+      <div class="container">
+        <h1>探索日本</h1>
+        <p>山海交织、文化厚重、四季分明——一次浏览，快速了解日本五大面向。</p>
+      </div>
+    </header>
+
+    <section class="stage" aria-label="内容区">
+      <div class="controls">
+        <button id="autoplayToggle" class="btn toggle" title="自动播放 开/关">自动轮播：开</button>
+        <button id="pauseBtn" class="btn" title="暂停/播放">暂停</button>
+      </div>
+
+      <div class="viewport" id="viewport">
+        <button class="arrow left" id="prev" aria-label="上一页">‹</button>
+        <div class="track" id="track" role="list">
+          <!-- SLIDE 0: 地理 -->
+          <article class="slide geography" role="listitem" aria-label="地理" style="background-image:url('https://images.unsplash.com/photo-1504610926078-a1611febcad3?auto=format&fit=crop&w=1600&q=80')">
+            <div class="card">
+              <h2>地理 — 岛屿、火山与四季</h2>
+              <p>
+                日本由四大岛（北海道、本州、四国、九州）及约6800个小岛组成，整体呈弧形沿太平洋伸展。国土以山地为主（约73%），地质活跃，位于环太平洋地震带，因此火山、温泉和地震较常见。气候从北海道的寒冷（带雪）到冲绳的亚热带，各地因经纬与海流差异形成丰富生态与农产。
+              </p>
+              <p>
+                <strong>自然亮点：</strong>富士山（海拔3,776 m）、日本阿尔卑斯、北海道湿地、冲绳珊瑚礁。<br>
+                <strong>经济相关：</strong>沿海平原集中城市与农业，渔业资源丰富（近海渔猎、海鲜加工业为沿海地区重要产业）。
+              </p>
+              <div style="margin-top:14px">
+                <!-- 简易交互地图（SVG） -->
+                <svg id="japanMap" width="420" height="120" viewBox="0 0 420 120" style="border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.06));">
+                  <!-- simplified stylized islands -->
+                  <g fill="#fff" opacity="0.9">
+                    <rect x="6" y="54" width="80" height="12" rx="3" fill="#ffd" opacity="0.06"></rect>
+                    <rect x="100" y="34" width="120" height="14" rx="4" fill="#ffd" opacity="0.06"></rect>
+                    <rect x="230" y="44" width="90" height="18" rx="4" fill="#ffd" opacity="0.06"></rect>
+                    <rect x="338" y="64" width="62" height="12" rx="3" fill="#ffd" opacity="0.06"></rect>
+                  </g>
+                  <g id="mapLabels" fill="#fff" font-size="10" opacity="0.9">
+                    <text x="36" y="62" text-anchor="middle" fill="#fff" style="font-weight:700">北海道</text>
+                    <text x="160" y="44" text-anchor="middle" fill="#fff" style="font-weight:700">本州</text>
+                    <text x="275" y="56" text-anchor="middle" fill="#fff" style="font-weight:700">四国</text>
+                    <text x="368" y="72" text-anchor="middle" fill="#fff" style="font-weight:700">九州</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </article>
+
+          <!-- SLIDE 1: 文化 -->
+          <article class="slide culture" role="listitem" aria-label="文化" style="background-image:url('https://images.unsplash.com/photo-1545569341-9b0f1b21b72b?auto=format&fit=crop&w=1600&q=80')">
+            <div class="card">
+              <h2>文化 — 传统与现代的交织</h2>
+              <p>
+                日本文化以礼仪、节日与手工艺著称。传统艺术包括茶道、花道、能乐、歌舞伎与浮世绘；现代文化以动漫、漫画、游戏与时尚产业在全球拥有大量粉丝。节庆贯穿四季：新年（正月）、樱花季（春）、盂兰盆节（夏季祭典）与赏枫（秋）。
+              </p>
+              <p>
+                <strong>社会特点：</strong>礼让与秩序，重视群体与面子文化；语言以日语为主，多数人口也学习英语作为第二语言。教育、职业文化强调勤勉与团队协作。
+              </p>
+              <div class="thumbs" aria-hidden="true">
+               
+                <img src="https://images.unsplash.com/photo-1519222970733-f546218fa6d7?auto=format&fit=crop&w=400&q=60" alt="和服">
+ 
+              </div>
+            </div>
+          </article>
+
+          <!-- SLIDE 2: 历史 -->
+          <article class="slide history" role="listitem" aria-label="历史" style="background-image:url('https://images.unsplash.com/photo-1585201503221-9ffce98a54ab?auto=format&fit=crop&w=1600&q=80')">
+            <div class="card">
+              <h2>历史 — 从古至今的变迁</h2>
+              <p>
+                日本历史线索包括：绳文与弥生文明、古代天皇时代、武士与幕府、战国纷争、江户时期的封闭与文化繁荣。明治维新（1868）引入现代工业与法律制度，随后进入20世纪的快速现代化。
+              </p>
+              <p>
+                20世纪中叶经历二战巨变与战后重建，日本在经济、科技与文化上迅速崛起，形成今日的静态与创新并存社会。
+              </p>
+            </div>
+          </article>
+
+          <!-- SLIDE 3: 景点 -->
+          <article class="slide attractions" role="listitem" aria-label="景点" style="background-image:url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?auto=format&fit=crop&w=1600&q=80')">
+            <div class="card">
+              <h2>景点 — 必访清单</h2>
+              <p>
+                推荐景点：富士山（火山与登山）、京都（千年古都，寺庙与茶屋）、奈良（古寺与鹿群）、东京（现代都市、博物馆与美食）、北海道（雪祭與自然）、冲绳（珊瑚礁与海洋活动）。
+              </p>
+              <p>
+                旅游贴士：春秋为最佳季节（赏樱、赏枫），提前预订新干线/酒店，体验当地温泉（Onsen）时注意公共礼仪。
+              </p>
+            </div>
+          </article>
+
+          <!-- SLIDE 4: 美食 -->
+          <article class="slide food" role="listitem" aria-label="美食" style="background-image:url('https://images.unsplash.com/photo-1604908811849-7074c36b73dd?auto=format&fit=crop&w=1600&q=80')">
+            <div class="card">
+              <h2>美食 — 口味与季节</h2>
+              <p>
+                日本料理强调食材本味与季节性。代表菜：寿司/刺身（海鲜）、拉面（多口味汤底）、天妇罗（炸制）、和牛（顶级牛肉）、章鱼烧/御好烧（街头小吃）。地方美食极具特色：北海道海鲜、广岛御好烧、福冈博多拉面、京都怀石料理。
+              </p>
+              <p>
+                用餐礼仪：进门脱鞋、安静品尝、共享小菜时注意秩序。便利店与市场（如丰洲/筑地）是体验当地日常美食的好去处。
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <button class="arrow right" id="next" aria-label="下一页">›</button>
+
+        <div class="dots" id="dots" aria-hidden="false"></div>
+      </div>
+    </section>
+  </div>
+
+<script>
+(function(){
+  const track = document.getElementById('track');
+  const slides = Array.from(track.children);
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+  const dotsEl = document.getElementById('dots');
+  const autoplayToggle = document.getElementById('autoplayToggle');
+  const pauseBtn = document.getElementById('pauseBtn');
+
+  let index = 0;
+  let autoplay = true;
+  let playing = true;
+  let autoTimer = null;
+  const AUTO_DELAY = 4500; // ms
+
+  // build dots
+  slides.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' active':'');
+    d.dataset.i = i;
+    d.addEventListener('click', ()=>go(i));
+    dotsEl.appendChild(d);
+  });
+  const dots = Array.from(dotsEl.children);
+
+  function syncUI(){
+    tabs.forEach((t,i)=>{
+      t.classList.toggle('active', i===index);
+      t.setAttribute('aria-current', i===index ? 'true' : 'false');
+    });
+    dots.forEach((d,i)=>d.classList.toggle('active', i===index));
+    // set transform
+    track.style.transform = `translateX(-${index*100}%)`;
+  }
+
+  function go(i, opts={}){
+    if(typeof i !== 'number') return;
+    index = (i + slides.length) % slides.length;
+    syncUI();
+    if(!opts.silent) restartAutoplay();
+  }
+
+  // tab click
+  tabs.forEach(t=>{
+    t.addEventListener('click', ()=>go(Number(t.dataset.i)));
+    t.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' ') { e.preventDefault(); go(Number(t.dataset.i)); }
+    });
+  });
+
+  prevBtn.addEventListener('click', ()=>go(index-1));
+  nextBtn.addEventListener('click', ()=>go(index+1));
+
+  // keyboard
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='ArrowLeft') go(index-1);
+    if(e.key==='ArrowRight') go(index+1);
+    if(e.key===' '){ e.preventDefault(); togglePlay(); }
+  });
+
+  // touch (swipe)
+  let startX=0, startT=0;
+  const viewport = document.getElementById('viewport');
+  viewport.addEventListener('touchstart', (e)=>{
+    startX = e.touches[0].clientX;
+    startT = Date.now();
+  }, {passive:true});
+  viewport.addEventListener('touchend', (e)=>{
+    const dx = e.changedTouches[0].clientX - startX;
+    const dt = Date.now() - startT;
+    if(Math.abs(dx) > 40 && dt < 700){
+      if(dx>0) go(index-1); else go(index+1);
+    }
+  });
+
+  // autoplay controls
+  function startAutoplay(){
+    if(autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(()=>{ if(autoplay && playing) go(index+1); }, AUTO_DELAY);
+  }
+  function stopAutoplay(){ if(autoTimer) { clearInterval(autoTimer); autoTimer=null; } }
+  function restartAutoplay(){ stopAutoplay(); startAutoplay(); }
+
+  autoplayToggle.addEventListener('click', ()=>{
+    autoplay = !autoplay;
+    autoplayToggle.textContent = `自动轮播：${autoplay? '开' : '关'}`;
+    if(autoplay) startAutoplay(); else stopAutoplay();
+  });
+
+  pauseBtn.addEventListener('click', ()=>{
+    playing = !playing;
+    pauseBtn.textContent = playing? '暂停' : '播放';
+  });
+
+  // long-press for rapid scroll
+  let holdInterval = null;
+  function holdChange(dir){
+    holdInterval = setInterval(()=> go(index + dir), 220);
+  }
+  [prevBtn,nextBtn].forEach((btn,idx)=>{
+    const dir = idx===0 ? -1 : 1;
+    btn.addEventListener('mousedown', ()=> holdChange(dir));
+    btn.addEventListener('mouseup', ()=> { clearInterval(holdInterval); holdInterval=null; });
+    btn.addEventListener('mouseleave', ()=> { clearInterval(holdInterval); holdInterval=null; });
+    // touch
+    btn.addEventListener('touchstart', ()=> holdChange(dir), {passive:true});
+    btn.addEventListener('touchend', ()=> { clearInterval(holdInterval); holdInterval=null; });
+  });
+
+  // initial
+  go(0, {silent:true});
+  startAutoplay();
+
+  // small interaction: highlight map region on geography slide show
+  try{
+    const map = document.getElementById('japanMap');
+    if(map){
+      // animate simple pulsing of labels when geography slide active
+      setInterval(()=>{
+        if(index===0){
+          map.querySelectorAll('text').forEach((t,i)=>{
+            t.style.transition = 'fill .4s';
+            t.style.fill = i%2 ? '#ffd' : '#fff';
+          });
+        }
+      }, 1200);
+    }
+  }catch(e){/*ignore*/}
+
+  // expose for debug
+  window.japanSlideGo = go;
+})();
+</script>
+</body>
+</html>
